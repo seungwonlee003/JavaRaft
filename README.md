@@ -27,46 +27,99 @@ Features reference the section number of the [Raft](https://raft.github.io/raft.
 - Implementing linearizable semantics (§8)
 
 ## Usage
-Try out the distributed key-value API.
 
-Configure application properties for nodes and build the JAR (skipping tests):
+Try out the distributed key-value API with a 3-node Raft cluster.
+
+### Option 1: Run with Docker Compose
+
+Build and start all three Raft nodes:
+
+```bash
+docker compose up --build
 ```
+
+This starts:
+
+```text
+node1 -> http://localhost:9090
+node2 -> http://localhost:9091
+node3 -> http://localhost:9092
+```
+
+To stop the cluster:
+
+```bash
+docker compose down
+```
+
+To simulate a node failure:
+
+```bash
+docker stop javaraft-node2
+```
+
+To restart the node:
+
+```bash
+docker start javaraft-node2
+```
+
+### Option 2: Run manually with local Java
+
+Build the JAR, skipping tests:
+
+```bash
 mvn clean package -DskipTests
 ```
 
-### Terminal 1
-```
+Terminal 1:
+
+```bash
 java -jar target/distributed_key_value_store-0.0.1-SNAPSHOT.jar --spring.profiles.active=node1
 ```
 
-### Terminal 2
-```
+Terminal 2:
+
+```bash
 java -jar target/distributed_key_value_store-0.0.1-SNAPSHOT.jar --spring.profiles.active=node2
 ```
 
-### Terminal 3
-```
+Terminal 3:
+
+```bash
 java -jar target/distributed_key_value_store-0.0.1-SNAPSHOT.jar --spring.profiles.active=node3
 ```
 
 ## Endpoints
-All operations must be sent to the leader node. Redirection is not implemented, and follower reads/writes are blocked.
 
-### Get operation:
+All operations must be sent to the current leader node. Redirection is not implemented, and follower reads/writes are blocked.
+
+In the examples below, `localhost:9090` is used. If node 1 is not the leader, send the request to the leader's port instead:
+
+```text
+node1 -> http://localhost:9090
+node2 -> http://localhost:9091
+node3 -> http://localhost:9092
 ```
+
+### Get operation
+
+```bash
 curl -X GET "http://localhost:9090/raft/client/get?key=myKey"
 ```
 
-### Put operation:
-```
+### Put operation
+
+```bash
 curl -X POST "http://localhost:9090/raft/client/insert" \
      -H "Content-Type: application/json" \
      -d '{"clientId": "client1", "sequenceNumber": 1, "key": "myKey", "value": "myValue"}'
 ```
 
-### Delete operation:
-```
+### Delete operation
+
+```bash
 curl -X POST "http://localhost:9090/raft/client/delete" \
      -H "Content-Type: application/json" \
-     -d '{"clientId": "client1", "sequenceNumber": 1, "key": "myKey"}'
+     -d '{"clientId": "client1", "sequenceNumber": 2, "key": "myKey"}'
 ```
