@@ -1,0 +1,21 @@
+services:
+  node1:
+    build: .
+    container_name: javaraft-node1
+    command: ["--spring.profiles.active=docker-node1"]
+    ports:
+      - "9090:9090"
+
+  node2:
+    build: .
+    container_name: javaraft-node2
+    command: ["--spring.profiles.active=docker-node2"]
+    ports:
+      - "9091:9091"
+
+  node3:
+    build: .
+    container_name: javaraft-node3
+    command: ["--spring.profiles.active=docker-node3"]
+    ports:
+      - "9092:9092"
